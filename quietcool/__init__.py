@@ -44,6 +44,9 @@ class Hub:
     async def set_current_speed(self, id, speed):
         return await self._put(f"/control/{id}", { "speed" : speed })
 
+    async def set_sequence(self, id, sequence):
+        return await self._put(f"/control/{id}", { "sequence" : sequence })
+
     async def get_fans(self):
         fan_uids = [f['uid'] for f in await self._get("/uids")]
         fans = [await Fan.create(self, uid) for uid in fan_uids]
@@ -62,6 +65,9 @@ class Fan:
         (info, status) = await self.hub.get_fan_details(self.id)
         self.info = info
         self.status = status
+
+    def __str__(self):
+        return f"{self.id} - {self.info['name']}"
 
     @property
     def name(self):
@@ -90,6 +96,16 @@ class Fan:
         }
         return speeds[sequence]
 
+    async def set_configured_speeds(self, number_of_speeds):
+        sequences = {
+            '3': '0',
+            '2': '1',
+            '1': '4'
+        }
+        sequence = sequences[str(number_of_speeds)]
+        await self.hub.set_sequence(self.id, sequence)
+        await self.refresh()
+
     async def set_current_speed(self, speed):
         speeds = {
             'High': '3',
@@ -98,6 +114,7 @@ class Fan:
         }
         translated_speed = speeds[speed]
         await self.hub.set_current_speed(self.id, translated_speed)
+        await self.refresh()
 
     async def turn_on(self):
         await self.hub.set_time_remaining(self.id, 65535)
