@@ -90,9 +90,9 @@ class Fan:
     def configured_speeds(self):
         sequence = self.status["sequence"]
         speeds = {
-            '0': ['Low', 'Medium', 'High'],
-            '1': ['Low', 'High'],
-            '4': ['High'],
+            '0': ['off', 'Low', 'Medium', 'High'],
+            '1': ['off', 'Low', 'High'],
+            '4': ['off', 'High'],
         }
         return speeds[sequence]
 
